@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ứng Dụng Thẻ Flashcard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --mainWhite: #f5f5f5;
+      --mainDark: #333333;
+      --mainOrange: #ff8552;
+      --mainGreen: #297373;
+    }
+    body {
+      background: var(--mainDark);
+      color: var(--mainWhite);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0px auto;
+      padding: 20px;
+    }
+
+    h3, h5 {
+      color: var(--mainWhite);
+      text-transform: capitalize;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 0.25rem;
+    }
+
+    .show-btn {
+      border-color: var(--mainOrange);
+      color: var(--mainOrange);
+      background: transparent;
+    }
+
+    .show-btn:hover {
+      background: var(--mainOrange);
+      color: var(--mainDark);
+    }
+
+    .question-card {
+      display: none;
+      position: relative;
+      background: transparent;
+      border: 3px solid var(--mainOrange);
+      padding: 20px;
+      margin-top: 10px;
+      border-radius: 7px;
+    }
+
+    .feedback {
+      display: none;
+      padding: 10px;
+      background-color: #f8d7da;
+      color: #721c24;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    .form-group textarea {
+      width: 90%;
+      border-radius: 0.25rem;
+      border: 2px solid var(--mainOrange);
+      padding: 10px;
+      font-size:1rem;
+      background-color: transparent;
+      color: var(--mainWhite);
+    }
+
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--mainGreen);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 2rem;
+      color: var(--mainOrange);
+      cursor: pointer;
+    }
+    .close-btn:hover {
+      color: var(--mainGreen);
+    }
+
+    .submitBtn {
+      border: 2px solid var(--mainGreen);
+      color: var(--mainGreen);
+      background: transparent;
+      width: 50%;
+      margin-top: 20px;
+    }
+    .submitBtn:hover {
+      background: var(--mainGreen);
+      color: var(--mainWhite);
+    }
+
+    .flashcard {
+      background: var(--mainWhite);
+      color: var(--mainDark);
+      border-radius: 5px;
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .flashcard-btn {
+      display: flex;
+      justify-content: space-between;
+    }
+    .flashcard-btn {
+  display: flex;
+  justify-content: space-between; /* Đảm bảo các nút "Sửa" và "Xóa" ở hai bên */
+  align-items: center; /* Căn giữa theo chiều dọc */
+  width: 100%;
+}
+
+.edit-flashcard {
+  margin: 0 auto; /* Căn nút "Sửa" vào giữa */
+}
+
+    .edit-flashcard, .delete-flashcard {
+      text-transform: uppercase;
+      padding: 1px 10px;
+      border-radius: 0px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .edit-flashcard {
+      border: 2px solid var(--mainGreen);
+      color: var(--mainGreen);
+      background: transparent;
+    }
+    .edit-flashcard:hover {
+      background: var(--mainGreen);
+      color: var(--mainWhite);
+    }
+
+    .delete-flashcard {
+      border: 2px solid var(--mainOrange);
+      color: var(--mainOrange);
+      background: transparent;
+    }
+    .delete-flashcard:hover {
+      background: var(--mainOrange);
+      color: var(--mainWhite);
+    }
+
+    .answer {
+      display: none;
+      color: var(--mainDark);
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+
+    .showItem {
+      display: block;
+    }
+
+    /* Style for the counter number on top left of the flashcard */
+    .flashcard-number {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.5rem;
+      color: var(--mainOrange);
+      font-weight: bold;
+    }
+    .music-btn {
+  border-color: var(--mainOrange);
+  color: var(--mainOrange);
+  background: transparent;
+  margin-left: 10px; /* Cách nút bên trái một chút */
+}
+
+.music-btn:hover {
+  background: var(--mainOrange);
+  color: var(--mainDark);
+}
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-11 col-lg-6 my-3">
+        <h3 class="text-capitalize">THẺ LƯU TRỮ</h3>
+        <button class="btn text-capitalize my-2 show-btn" id="show-btn">THÊM CÂU HỎI </button>
+        <button class="btn text-capitalize my-2 music-btn" id="music-btn"><i class="fas fa-music"></i> ÂM NHẠC</button>
+
+        <div class="card card-body my-3 question-card">
+          <!-- Close Button -->
+          <a href="#" class="close-btn mt-0"><i class="fas fa-window-close"></i></a>
+          <!-- Feedback Message -->
+          <div class="feedback alert w-75 text-capitalize">Không thể thêm câu hỏi nếu giá trị trống!!</div>
+          <form id="question-form">
+            <!-- Question Input -->
+            <h5 class="text-capitalize">Câu hỏi</h5>
+            <div class="form-group">
+              <textarea class="w-100" id="question-input" rows="3"></textarea>
+            </div>
+            <!-- Answer Input -->
+            <h5 class="text-capitalize">Câu trả lời</h5>
+            <div class="form-group">
+              <textarea class="w-100" id="answer-input" rows="3"></textarea>
+            </div>
+            <!-- Save Button -->
+            <button type="submit" class="btn submitBtn text-capitalize w-50">Lưu</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="row px-2" id="questions-list">
+      <!-- Dynamic Flashcards will be inserted here -->
+    </div>
+  </div>
+
+  <!-- Firebase Script -->
+  <script type="module">
+    // Import Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+    
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFemNyyDC3EnVeKc2ANUoUmXKlA1T3T08",
+      authDomain: "flashcards-vip.firebaseapp.com",
+      databaseURL: "https://flashcards-vip-default-rtdb.firebaseio.com",
+      projectId: "flashcards-vip",
+      storageBucket: "flashcards-vip.firebasestorage.app",
+      messagingSenderId: "502523443890",
+      appId: "1:502523443890:web:c0674c6c3237e5ca24a7ab",
+      measurementId: "G-BX4RR7YW85"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    
+    document.addEventListener("DOMContentLoaded", eventListeners);
+
+    function eventListeners() {
+      const showBtn = document.getElementById("show-btn");
+      const questionCard = document.querySelector(".question-card");
+      const closeBtn = document.querySelector(".close-btn");
+      const form = document.getElementById("question-form");
+      const feedback = document.querySelector(".feedback");
+      const questionInput = document.getElementById("question-input");
+      const answerInput = document.getElementById("answer-input");
+      const questionList = document.getElementById("questions-list");
+
+      // Fetch data from Firebase
+      const dataRef = ref(db, 'flashcards/');
+      get(dataRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const ui = new UI();
+          ui.loadQuestions(questionList, data);
+        }
+      });
+
+      // Show question card
+      showBtn.addEventListener("click", function () {
+        questionCard.classList.add("showItem");
+        form.querySelector(".submitBtn").textContent = "Lưu"; // Reset button text
+      });
+
+      // Close question card
+      closeBtn.addEventListener("click", function () {
+        questionCard.classList.remove("showItem");
+        resetForm();
+      });
+
+      // Add question
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const questionValue = questionInput.value;
+        const answerValue = answerInput.value;
+
+        if (questionValue === "" || answerValue === "") {
+          feedback.classList.add("showItem", "alert-danger");
+          setTimeout(function () {
+            feedback.classList.remove("showItem", "alert-danger");
+          }, 2000);
+        } else {
+          const newQuestion = {
+            question: questionValue,
+            answer: answerValue
+          };
+
+          // Push new question to Firebase
+          const newQuestionRef = ref(db, 'flashcards/' + new Date().getTime());
+          set(newQuestionRef, newQuestion);
+
+          // Add the new flashcard to the DOM immediately
+          const ui = new UI();
+          ui.addQuestion(questionList, newQuestion);
+
+          // Clear the form fields
+          resetForm();
+        }
+      });
+
+      // Handle click on edit, delete, or show answer
+      questionList.addEventListener("click", function (e) {
+        e.preventDefault();
+        const clicked = e.target.id;
+        if (clicked === "delete-flashcard") {
+          let id = e.target.dataset.id;
+          const flashcardRef = ref(db, 'flashcards/' + id);
+          set(flashcardRef, null); // Delete from Firebase
+
+          // Remove from DOM
+          e.target.closest('.flashcard').remove();
+        }
+
+        if (clicked === "edit-flashcard") {
+          let id = e.target.dataset.id;
+          const flashcardRef = ref(db, 'flashcards/' + id);
+          get(flashcardRef).then((snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.val();
+              questionInput.value = data.question;
+              answerInput.value = data.answer;
+
+              // Show the question card and change the button text to "Update"
+              questionCard.classList.add("showItem");
+              form.querySelector(".submitBtn").textContent = "Cập nhật";
+
+              // Update the flashcard in Firebase after editing
+              form.querySelector(".submitBtn").onclick = function (e) {
+                e.preventDefault();
+
+                const updatedQuestion = {
+                  question: questionInput.value,
+                  answer: answerInput.value
+                };
+
+                // Update data in Firebase
+                set(flashcardRef, updatedQuestion);
+
+                // Update the flashcard in the DOM immediately without changing its position
+                const flashcardElement = e.target.closest('.flashcard');
+                flashcardElement.querySelector('h4').textContent = updatedQuestion.question;
+                flashcardElement.querySelector('.answer').textContent = updatedQuestion.answer;
+
+                // Reset form and button text
+                resetForm();
+              };
+            }
+          });
+        }
+
+        if (clicked === "show-answer") {
+          e.target.nextElementSibling.classList.toggle("showItem");
+        }
+      });
+    }
+document.getElementById("music-btn").addEventListener("click", function () {
+  // Kiểm tra nếu âm thanh đã phát xong hay chưa
+  if (this.audio && !this.audio.ended) {
+    return; // Nếu nhạc vẫn đang phát thì không làm gì cả
+  }
+  
+  // Tạo đối tượng âm thanh và phát nhạc
+  this.audio = new Audio('https://cdn.glitch.global/1440c6cc-f0d9-4a70-aaab-1b910cbdd024/1224.MP3?v=1734967909313');  // Thay 'path-to-your-audio-file.mp3' bằng đường dẫn đến file âm thanh của bạn
+  this.audio.play();
+
+  // Khi nhạc kết thúc, cho phép phát lại
+  this.audio.onended = () => {
+    this.audio = null;  // Xóa đối tượng âm thanh sau khi nhạc kết thúc
+  };
+});
+    // Method to reset the form
+    function resetForm() {
+      const questionInput = document.getElementById("question-input");
+      const answerInput = document.getElementById("answer-input");
+      questionInput.value = "";
+      answerInput.value = "";
+      const formBtn = document.querySelector(".submitBtn");
+      formBtn.textContent = "Lưu";  // Reset button text to "Save"
+    }
+
+    // UI Constructor Function
+    function UI() {}
+
+    // UI Methods
+    UI.prototype.loadQuestions = function (el, data) {
+      let counter = 1; // Variable to keep track of the order
+      for (const id in data) {
+        const question = data[id];
+        const divEl = document.createElement("div");
+        divEl.classList.add("col-md-4");
+        divEl.innerHTML = `
+          <div class="card card-body flashcard my-3">
+            <span class="flashcard-number">${counter}</span>
+      <h4 class="text-capitalize text-dark">${question.question.replace(/\n/g, "<br>")}</h4>
+            <a href="#" id="show-answer" class="text-capitalize my-3 show-answer">Câu Trả Lời</a>
+      <h5 class="answer text-dark mb-3">${question.answer.replace(/\n/g, "<br>")}</h5>
+            <div class="flashcard-btn d-flex justify-content-between">
+              <a href="#" id="edit-flashcard" class="btn my-1 edit-flashcard text-uppercase" data-id="${id}">Sửa</a>
+              <a href="#" id="delete-flashcard" class="btn my-1 delete-flashcard text-uppercase" data-id="${id}">Xóa</a>
+            </div>
+          </div>
+        `;
+        el.appendChild(divEl);
+        counter++; // Increment counter for the next flashcard
+      }
+    };
+
+    // Method to add a question immediately after saving
+    UI.prototype.addQuestion = function (el, question) {
+      let counter = el.children.length + 1; // Determine the counter based on the current number of flashcards
+      const divEl = document.createElement("div");
+      divEl.classList.add("col-md-4");
+      divEl.innerHTML = `
+        <div class="card card-body flashcard my-3">
+          <span class="flashcard-number">${counter}</span>
+      <h4 class="text-capitalize text-dark">${question.question.replace(/\n/g, "<br>")}</h4>
+          <a href="#" id="show-answer" class="text-capitalize my-3 show-answer">Câu Trả Lời</a>
+      <h5 class="answer text-dark mb-3">${question.answer.replace(/\n/g, "<br>")}</h5>
+          <div class="flashcard-btn d-flex justify-content-between">
+            <a href="#" id="edit-flashcard" class="btn my-1 edit-flashcard text-uppercase">Sửa</a>
+            <a href="#" id="delete-flashcard" class="btn my-1 delete-flashcard text-uppercase">Xóa</a>
+          </div>
+        </div>
+      `;
+      el.appendChild(divEl);
+    };
+  </script>
+</body>
+</html>
